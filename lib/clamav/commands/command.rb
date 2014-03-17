@@ -36,7 +36,9 @@ module ClamAV
           when 'Error processing command. ERROR'
             ErrorResponse.new(str)
           else
+            # not a big fan of regexps, ":" can appear in filepath, i didn't check if there's a test for it
             /(?<id>\d+): (?<filepath>.*): (?<status>.*)/ =~ str
+            # should probably raise something more meaningful than NoMethodError when Statuses[status] is  nil,
             Statuses[status].new(filepath)
           end
         end
