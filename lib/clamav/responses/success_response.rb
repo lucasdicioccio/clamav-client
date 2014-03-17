@@ -17,6 +17,8 @@
 require 'clamav/responses'
 
 module ClamAV
+  # I'd drop the suffix Response here, or at least shorten to Rsp if you want to track types
+  # same for other Response objs (ErrorResponse is a good candidate for ErrorRsp)
   class SuccessResponse < Response
   end
 end
