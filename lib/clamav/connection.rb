@@ -18,39 +18,51 @@ require 'socket'
 
 module ClamAV
   class Connection
+    # cool & clean =)
+    # I'd just be more verbose on the ArgumentError
     def initialize(args)
       socket  = args.fetch(:socket)  { missing_required_argument(:socket) }
       wrapper = args.fetch(:wrapper) { missing_required_argument(:wrapper) }
 
       if socket && wrapper
+        # maybe rename to input/output ? doesn't have to be a socket/a wrapper?
         @socket = socket
         @wrapper = wrapper
       else
         raise ArgumentError
       end
     end
-
-    def establish_connection
-      wrapped_request = @wrapper.wrap_request("IDSESSION")
-      @socket.write wrapped_request
-    end
-
-    def write_request(str)
-      wrapped_request = @wrapper.wrap_request(str)
-      @socket.write wrapped_request
+    
+    ## these use internal state
+    
+    def wrap(req)
+      # could but no need to be private, has no side-effect
+      @wrapper.wrap_request("IDSESSION")
     end
 
     def read_response
       @wrapper.read_response(@socket)
     end
+  
+    def raw_write(str)
+      @socket.write str
+    end
+    
+    ## these are mere helpers
+    
+    def establish_connection
+      str = wrap "IDSESSION"
+      raw_write str
+    end
+
+    def write_request(req)
+      str = wrap req
+      raw_write str
+    end
 
     def send_request(str)
       write_request(str)
       read_response
-    end
-
-    def raw_write(str)
-      @socket.write str
     end
 
     private
