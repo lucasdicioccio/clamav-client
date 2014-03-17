@@ -20,6 +20,7 @@ module ClamAV
     def unwrap_response(response); raise NotImplementedError; end
 
     protected
+      # maybe you can use a StringScanner, however it might be overkill if there is nothing crazy in clam-av's protocol
       def read_until(socket, delimiter)
         buff = ""
         while (char = socket.getc) != delimiter
