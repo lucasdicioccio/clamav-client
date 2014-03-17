@@ -51,7 +51,7 @@ module ClamAV
     ## these are mere helpers
     
     def establish_connection
-      str = wrap "IDSESSION"
+      str = wrap "IDSESSION" # use a constant, like for Commands 
       raw_write str
     end
 
