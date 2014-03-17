@@ -25,29 +25,45 @@ require "clamav/wrappers/null_termination_wrapper"
 
 module ClamAV
   class Client
-    def initialize(connection = default_connection)
+    module Default
+      # cheesy module to create a default connection object that fits a ClamAV::Client
+      # could move elsewhere
+        extend self
+        def resolve_default_socket
+        unix_socket, tcp_host, tcp_port = ENV.values_at('CLAMD_UNIX_SOCKET', 'CLAMD_TCP_HOST', 'CLAMD_TCP_PORT')
+        if tcp_host && tcp_port
+          ::TCPSocket.new(tcp_host, tcp_port)
+        else
+          ::UNIXSocket.new(unix_socket || '/var/run/clamav/clamd.ctl')
+        end
+      end
+      
+      def connection
+        ClamAV::Connection.new(
+          socket: resolve_default_socket,
+          wrapper: ::ClamAV::Wrappers::NewLineWrapper.new
+        )
+      end
+    end
+  
+    def self.open(conn = nil)
+      conn = DefaultConnection.default unless conn
+      obj = self.new(conn)
+      obj.establish_connection
+      if block_given?
+        yield obj
+        # TODO: should /ensure/ a proper closing if needed
+      else
+        return obj
+      end
+    end
+    
+    def initialize(connection)
       @connection = connection
-      connection.establish_connection
     end
 
     def execute(command)
       command.call(@connection)
-    end
-
-    def default_connection
-      ClamAV::Connection.new(
-        socket: resolve_default_socket,
-        wrapper: ::ClamAV::Wrappers::NewLineWrapper.new
-      )
-    end
-
-    def resolve_default_socket
-      unix_socket, tcp_host, tcp_port = ENV.values_at('CLAMD_UNIX_SOCKET', 'CLAMD_TCP_HOST', 'CLAMD_TCP_PORT')
-      if tcp_host && tcp_port
-        ::TCPSocket.new(tcp_host, tcp_port)
-      else
-        ::UNIXSocket.new(unix_socket || '/var/run/clamav/clamd.ctl')
-      end
     end
   end
 end
