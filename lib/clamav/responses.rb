@@ -16,10 +16,15 @@
 
 module ClamAV
   class Response
+    
+    # blind guess: you probably want "path" or "filepath" rather than "file"
     def initialize(file)
       @file = file
     end
 
+    # maybe you want to test with other.is_a?(self.class)
+    # As I go through the rest of the code, I'll try to remember that you did this change.
+    # If i don't find where you use this; it's either dead code or requires an explanation. deal?
     def ==(other)
       @file == other.file && self.class == other.class
     end
