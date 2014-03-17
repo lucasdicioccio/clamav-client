@@ -19,7 +19,7 @@ module ClamAV
   module Commands
     class PingCommand < Command
       def call(conn)
-        !!(/\d+: PONG/.match(conn.send_request("PING")))
+        !!(/\d+: PONG/.match(conn.send_request("PING")))  # use a constant, maybe use a unique module like ClamAV Grammar / Constants / Language 
       end
     end
   end
