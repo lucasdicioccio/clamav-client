@@ -60,9 +60,19 @@ module ClamAV
       raw_write str
     end
 
-    def send_request(str)
-      write_request(str)
-      read_response
+    # I see what you're doing with send_request now (i.e., after reading Commands.
+    # maybe you should be more explicit that you are waiting for a response too
+    # 1st way yield the result
+    # 2nd way is a more explicit name, like execute_request
+    # also, you should add an optional timeout option or leave a comment for others to do that
+    def execute_request(req)
+      write_request(req)
+      rsp = read_response
+      if block_given?
+        yield rsp
+      else
+        rsp
+      end
     end
 
     private
