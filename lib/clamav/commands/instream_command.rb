@@ -25,14 +25,15 @@ module ClamAV
         @max_chunk_size = max_chunk_size
       end
 
+      # not against some explanation here:
       def call(conn)
-        conn.write_request("INSTREAM")
+        conn.write_request("INSTREAM")  # use a constant
 
         while(packet = @io.read(@max_chunk_size))
           packet_size = [packet.size].pack("N")
           conn.raw_write("#{packet_size}#{packet}")
         end
-        conn.raw_write("\x00\x00\x00\x00")
+        conn.raw_write("\x00\x00\x00\x00") # use a constant
         get_status_from_response(conn.read_response)
       end
 
