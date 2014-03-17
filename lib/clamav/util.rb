@@ -18,6 +18,9 @@ module ClamAV
   module Util
     UnknownPathException = Class.new(RuntimeError)
 
+    # a small comment why you would use this function rather than a Find.find
+    # e.g., is it recursive?
+    # e.g. does it follow links and all these funky filesystem oddities =)
     def Util.path_to_files(path)
       if Dir.exist?(path)
         Dir.glob(path + '/*')
