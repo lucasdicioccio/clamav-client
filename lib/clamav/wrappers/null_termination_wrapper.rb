@@ -16,6 +16,7 @@
 
 require 'clamav/wrapper'
 
+# ok (i.e. no comment)
 module ClamAV
   module Wrappers
     class NullTerminationWrapper < ::ClamAV::Wrapper
