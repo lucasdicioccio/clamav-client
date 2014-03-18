@@ -20,20 +20,46 @@ module ClamAV
   module Commands
     class InstreamCommand < Command
 
+      # helper class to extract the streaming logic and only that
+      class Stream
+        include Dsl
+
+        # todo: get the @conn in
+        # provide raw_write and similar hooks, or inherit Stream from Client (break circular deps in that case)
+
+        def start_stream
+          write_request InStream
+        end
+
+        def close_stream
+          raw_write(EndOfStream)
+        end
+
+        def streaming
+          start_stream
+          yield self
+          close_stream
+        end
+
+        def write_packet(pkt)
+          size = [pkt.size].pack("N")
+          conn.raw_write("#{size}#{pkt}")
+        end
+
+        alias :<< :write_packet
+      end
+
       def initialize(io, max_chunk_size = 1024)
         @io = begin io rescue raise ArgumentError, 'io is required', caller; end
         @max_chunk_size = max_chunk_size
       end
 
-      # not against some explanation here:
       def call(conn)
-        conn.write_request("INSTREAM")  # use a constant
-
-        while(packet = @io.read(@max_chunk_size))
-          packet_size = [packet.size].pack("N")
-          conn.raw_write("#{packet_size}#{packet}")
+        Stream.open(conn) do |str|
+          while(packet = @io.read(@max_chunk_size))
+            str << packet
+          end
         end
-        conn.raw_write("\x00\x00\x00\x00") # use a constant
         get_status_from_response(conn.read_response)
       end
 

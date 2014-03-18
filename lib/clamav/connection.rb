@@ -47,33 +47,6 @@ module ClamAV
     def raw_write(str)
       @socket.write str
     end
-    
-    ## these are mere helpers
-    
-    def establish_connection
-      str = wrap "IDSESSION" # use a constant, like for Commands 
-      raw_write str
-    end
-
-    def write_request(req)
-      str = wrap req
-      raw_write str
-    end
-
-    # I see what you're doing with send_request now (i.e., after reading Commands.
-    # maybe you should be more explicit that you are waiting for a response too
-    # 1st way yield the result
-    # 2nd way is a more explicit name, like execute_request
-    # also, you should add an optional timeout option or leave a comment for others to do that
-    def execute_request(req)
-      write_request(req)
-      rsp = read_response
-      if block_given?
-        yield rsp
-      else
-        rsp
-      end
-    end
 
     private
     def missing_required_argument(key)
